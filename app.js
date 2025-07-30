@@ -28,20 +28,28 @@ app.get("/hello", (req, res) => {
 });
 
 app.post("/api/Register", (req, res) => {
-  const reqUser = req.body;
-
-  let isValid = true;
-  const newUser = User.validate(reqUser).catch((error) =>
+  
+ 
+  // remmeber to user bcrypt to hash this
+  const newUser = new User({
+    username: reqUser.username,
+    passwordHash: reqUser.passwordHash,
+    signUpDate: reqUser.signUpDate,
+    email: reqUser.email,
+  });
+   newUser.save().catch((err) =>
     res
-      .status(400)
+      .status(500)
       .json({
-        errorMessage: error,
-        message: "You have made an invalid request by sending empty data!",
+        message: "internal server error",
+        errorMessage: err,
       })
       .send()
   );
-
-  
+  res
+    .status(200)
+    .json({ username: `${newUser.username} has been created successfully` })
+    .send();
 });
 
 module.exports = app;
