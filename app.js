@@ -28,15 +28,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.post("/api/Register", (req, res) => {
-  
- 
-  // remmeber to user bcrypt to hash this
-  const newUser = new User({
-    username: reqUser.username,
-    passwordHash: reqUser.passwordHash,
-    signUpDate: reqUser.signUpDate,
-    email: reqUser.email,
-  });
+
    newUser.save().catch((err) =>
     res
       .status(500)
