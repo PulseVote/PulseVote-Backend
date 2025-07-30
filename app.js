@@ -1,7 +1,7 @@
-const express = require("express");
-const cors = require("cors");
 const helmet = require("helmet");
 const dotenv = require("dotenv");
+const express = require("express");
+const cors = require("cors");
 
 dotenv.config();
 
@@ -22,4 +22,3 @@ app.get("/hello", (req, res) => {
 });
 
 module.exports = app;
-//
