@@ -29,17 +29,19 @@ app.get("/hello", (req, res) => {
 
 app.post("/api/Register", (req, res) => {
   const reqUser = req.body;
-  let message;
-  const isValid = User.validate(reqUser).catch((error) =>
-    res.json({ message: error }).send()
+
+  let isValid = true;
+  const newUser = User.validate(reqUser).catch((error) =>
+    res
+      .status(400)
+      .json({
+        errorMessage: error,
+        message: "You have made an invalid request by sending empty data!",
+      })
+      .send()
   );
 
-  if (!isValid) {
-    message = {
-      message: "You have made an invalid request by sending empty data!",
-    };
-    res.status(400).json(message);
-  }
+  
 });
 
 module.exports = app;
