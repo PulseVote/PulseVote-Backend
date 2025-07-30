@@ -15,7 +15,7 @@ app.use(helmet());
 app.use(cors());
 
 app.use(express.json());
-
+// create a custom validation handler for success, and fail, also have a critical
 app.get("/", (req, res) => {
   res.send("PulseVote API running");
 });
@@ -29,8 +29,11 @@ app.get("/hello", (req, res) => {
 
 app.post("/api/Register", (req, res) => {
   const reqUser = req.body;
-  const isValid = User.validate(reqUser);
   let message;
+  const isValid = User.validate(reqUser).catch((error) =>
+    res.json({ message: error }).send()
+  );
+
   if (!isValid) {
     message = {
       message: "You have made an invalid request by sending empty data!",
