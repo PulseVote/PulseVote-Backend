@@ -2,7 +2,10 @@ const helmet = require("helmet");
 const dotenv = require("dotenv");
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 
+const User = require("./schemas/user.js");
+const mongoose = require("mongoose");
 dotenv.config();
 
 const app = express();
@@ -18,7 +21,22 @@ app.get("/", (req, res) => {
 });
 
 app.get("/hello", (req, res) => {
-  res.send("Hello world from pulse vote");
+  let data = {
+    message: "Hello world from pulse vote",
+  };
+  res.json(data);
+});
+
+app.post("/api/Register", (req, res) => {
+  const reqUser = req.body;
+  const isValid = User.validate(reqUser);
+  let message;
+  if (!isValid) {
+    message = {
+      message: "You have made an invalid request by sending empty data!",
+    };
+    res.status(400).json(message);
+  }
 });
 
 module.exports = app;

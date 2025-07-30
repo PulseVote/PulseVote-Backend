@@ -15,7 +15,8 @@
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "https": "^1.0.0",
-    "mongoose": "^8.16.4",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.16.5",
     "rate-limit": "^0.1.1",
     "tls": "^0.0.1"
   },
