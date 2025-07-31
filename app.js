@@ -24,5 +24,11 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("PulseVote API running");
 });
+app.get("/api/protected", protect, (req, res) => {
+  res.json({
+    message: `Welcome, user ${req.user.id}! You have accessed protected data.`,
+    timestamp: new Date(),
+  });
+});
 
 module.exports = app;

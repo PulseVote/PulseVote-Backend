@@ -18,50 +18,47 @@ async function sendMail(sender, receivers, subject, content) {
   if (receivers.length == 0) {
     throw new Error("there are no receivers.");
   }
-  let toWhomItMayConcern;
-  for (receiver of receivers) {
-    toWhomItMayConcern += `${receiver}, `;
-  }
-
   const info = await transporter.sendMail({
     from: sender,
-    to: receivers, // we need to resolve this
+    to: receivers.join(", "), // we need to resolve this
     subject: subject,
     text: content,
   });
   console.log("Message Sent");
 }
-async function validateUser(reqUser) {
+async function validateUser(reqUser, res) {
   return User.validate(reqUser).catch((error) =>
-    res
-      .status(400)
-      .json({
-        errorMessage: error,
-        message: "You have made an invalid request by sending empty data!",
-      })
-      .send()
+    res.status(400).json({
+      errorMessage: error,
+      message: "You have made an invalid request by sending empty data!",
+    })
   );
 }
-function createUser(validUserReq) {
-  return new User({
-    passwordHash: validUserReq.passwordHash,
-    username: validUserReq.username,
-    email: validUserReq.email,
-    signUpDate: validUserReq.signUpDate,
-  });
-}
+
 async function registerUser(req, res) {
   const reqUser = req.body;
-  validateUser(reqUser);
-  const { username, email, passwordHash, signUpDate } = reqUser;
-  const emailExists = await User.findOne({ email: email }).exec();
-  if (!emailExists) {
-    return res.status(409).json({ message: "This email is already in use, please try again" });
+  try {
+    await validateUser(reqUser);
+  } catch (error) {
+    throw new Error("Invalid user data: " + error.message);
   }
-  const validUser = createUser(reqUser);
+  const { username, email, password, signUpDate } = reqUser;
+  const emailExists = await User.findOne({ email: email }).exec();
+  if (emailExists) {
+    return res
+      .status(409)
+      .json({ message: "This email is already in use, please try again" });
+  }
+  const passwordHash = await bcrypt.hash(passwordHash, 10);
+  const validUser = new User({
+    username: reqUser.username,
+    passwordHash: passwordHash,
+    email: reqUser.email,
+    signUpDate: reqUser.signUpDate,
+  });
   try {
     await validUser.save();
-    let token = tokenization({ id: user._id }, process.env.SECRET, {
+    let token = tokenization({ id: email._id }, process.env.SECRET, {
       expiresIn: process.env.TOKEN_LONG,
     });
     res
