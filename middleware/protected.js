@@ -4,18 +4,15 @@ const jwt = require("jsonwebtoken");
 const { PropertyError } = require("../exceptions/PropertyError.js");
 function protected(req, res, next) {
   // first we need to validate if the req contains the jwt, if it does, then we verify it, else we bounce it back
-  const token = req.Header.Bearer;
-  if (token == null) {
+  const token = req.headers.authorization;
+  if (!token) {
     throw new PropertyError(["Bearer"]);
   }
-
-  const verified = jwt.verify(token, process.env.SECRET);
-  if (!verified) {
-    return res.status(401).json({ message: "Unauthorized access" });
+  try {
+    const decoded = jwt.verify(token, process.env.SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ message: "Unauthorized access" });
   }
-  res
-    .status(201)
-    .json({ message: "You may now access the appropriate resources" });
-
-  next();
 }
