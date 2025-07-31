@@ -55,31 +55,26 @@ async function registerUser(req, res) {
   validateUser(reqUser);
   const { username, email, passwordHash, signUpDate } = reqUser;
   const emailExists = await User.findOne({ email: email }).exec();
-  if (emailExists) {
-    return res
-      .status(409)
-      .json({ message: "This email is already in use, please try again" });
+  if (!emailExists) {
+    return res.status(409).json({ message: "This email is already in use, please try again" });
   }
   const validUser = createUser(reqUser);
-  let token;
-  validUser
-    .save()
-    .catch((err) =>
-      res.status(500).json({
-        message: "internal server error",
-        errorMessage: err,
-      })
-    )
-    .then(
-      (token = tokenization({ id: user._id }, process.env.SECRET, {
-        expiresIn: process.env.TOKEN_LONG,
-      }))
-    );
-  res
-    .status(201)
-    .json({ message: `Successfully registered ${validUser.username}!` });
+  try {
+    await validUser.save();
+    let token = tokenization({ id: user._id }, process.env.SECRET, {
+      expiresIn: process.env.TOKEN_LONG,
+    });
+    res
+      .status(201)
+      .json({ message: `Successfully registered ${validUser.username}!` });
+  } catch (err) {
+    res.status(500).json({
+      message: "internal server error",
+      errorMessage: err,
+    });
+  }
 }
-
+// creating the long lived token - refresh token
 async function loginUser(req, res) {
   const { email, password } = req.body;
   const isValidDetails = email.length > 3 && password.length > 6 ? true : false;
