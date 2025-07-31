@@ -2,6 +2,34 @@ const { isEmpty } = require("tls");
 const User = require("../schemas/user.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { options } = require("../app.js");
+const nodeMailler = require("nodemailer");
+const transporter = nodeMailler.createTransport({
+  host: "gmail",
+  secure: true,
+  auth: {
+    user: "shravanramjathan@gmail.com",
+    pass: "myPassword",
+  },
+});
+
+async function sendMail(sender, receivers, subject, content) {
+  if (receivers.length == 0) {
+    throw new Error("there are no receivers.");
+  }
+  let toWhomItMayConcern;
+  for (receiver of receivers) {
+    toWhomItMayConcern += `${receiver}, `;
+  }
+
+  const info = await transporter.sendMail({
+    from: sender,
+    to: receivers, // we need to resolve this
+    subject: subject,
+    text: content,
+  });
+  console.log("Message Sent");
+}
 async function validateUser(reqUser) {
   return User.validate(reqUser).catch((error) =>
     res
@@ -36,13 +64,10 @@ async function registerUser(req, res) {
   validUser
     .save()
     .catch((err) =>
-      res
-        .status(500)
-        .json({
-          message: "internal server error",
-          errorMessage: err,
-        })
-        .send()
+      res.status(500).json({
+        message: "internal server error",
+        errorMessage: err,
+      })
     )
     .then(
       res
@@ -55,26 +80,26 @@ async function loginUser(req, res) {
   const { email, password } = req.body;
   const isValidDetails = email.length > 3 && password.length > 6 ? true : false;
   if (!isValidDetails) {
-    res
-      .status(400)
-      .json({
-        errorMessage: "You have sent invalid email or password details.",
-      })
-      .send();
+    res.status(400).json({
+      errorMessage: "You have sent invalid email or password details.",
+    });
   }
   const user = await User.findOne({ email: email });
 
   if (user == null) {
-    res.status.json({ errorMessage: "User does not exist!" }).send();
+    return res.status(404).json({ errorMessage: "User does not exist!" });
   }
-  const validPasswordAttempt = bcrypt.compare(password, user.passwordHash);
+  const validPasswordAttempt = await bcrypt.compare(
+    password,
+    user.passwordHash
+  );
   if (!validPasswordAttempt) {
-    res
-      .status(401)
-      .json({
-        errorMessage: "Username or password is incorrect!",
-      })
-      .send();
+    return res.status(401).json({
+      errorMessage: "Username or password is incorrect!",
+    });
   }
-  
+  let token = jwt.sign({ id: user._id }, process.env.SECRET, {
+    expiresIn: "1h",
+  });
+  res.status(200).json({ token });
 }
