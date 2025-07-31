@@ -3,6 +3,7 @@ const User = require("../schemas/user.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { options } = require("../app.js");
+const tokenization = require("./service/tokenGeneration.js");
 const nodeMailler = require("nodemailer");
 const transporter = nodeMailler.createTransport({
   host: "gmail",
@@ -60,7 +61,7 @@ async function registerUser(req, res) {
       .json({ message: "This email is already in use, please try again" });
   }
   const validUser = createUser(reqUser);
-
+  let token;
   validUser
     .save()
     .catch((err) =>
@@ -70,10 +71,13 @@ async function registerUser(req, res) {
       })
     )
     .then(
-      res
-        .status(201)
-        .json({ message: `Successfully registered ${validUser.username}!` })
+      (token = tokenization({ id: user._id }, process.env.SECRET, {
+        expiresIn: process.env.TOKEN_LONG,
+      }))
     );
+  res
+    .status(201)
+    .json({ message: `Successfully registered ${validUser.username}!` });
 }
 
 async function loginUser(req, res) {
@@ -98,8 +102,14 @@ async function loginUser(req, res) {
       errorMessage: "Username or password is incorrect!",
     });
   }
-  let token = jwt.sign({ id: user._id }, process.env.SECRET, {
-    expiresIn: "1h",
+  let token = tokenization({ id: user._id }, process.env.SECRET, {
+    expiresIn: process.env.TOKEN_SHORT,
   });
+
   res.status(200).json({ token });
 }
+
+module.exports = {
+  registerUser,
+  loginUser,
+};
