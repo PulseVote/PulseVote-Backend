@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express.router();
+const router = express.Router();
 const { registerUser, loginUser } = require("../controllers/authController.js");
 const timeLog = (req, res, next) => {
   console.log(`Time: ${Date.now()}`);
@@ -12,8 +12,8 @@ router.get("/", (req, res) => {
 });
 
 // we now added a router to these functions, so when this endpoint is called, that controller logic will run
-router.get("/auth/register", registerUser);
+router.post("/register", registerUser);
 
-router.get("/auth/login", loginUser);
+router.post("/login", loginUser);
 
 module.exports = router;

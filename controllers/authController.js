@@ -2,9 +2,9 @@ const { isEmpty } = require("tls");
 const User = require("../schemas/user.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { options } = require("../app.js");
-const tokenization = require("./service/tokenGeneration.js");
+const tokenization = require("../service/tokenGeneration.js");
 const nodeMailler = require("nodemailer");
+const PropertyError = require("../exceptions/PropertyError.js");
 const transporter = nodeMailler.createTransport({
   host: "gmail",
   secure: true,
@@ -26,22 +26,25 @@ async function sendMail(sender, receivers, subject, content) {
   });
   console.log("Message Sent");
 }
-async function validateUser(reqUser, res) {
-  return User.validate(reqUser).catch((error) =>
-    res.status(400).json({
-      errorMessage: error,
-      message: "You have made an invalid request by sending empty data!",
-    })
-  );
+async function validateUser(reqUser) {
+  try {
+    await User.validate(reqUser);
+  } catch (error) {
+    console.log(error);
+    let invalidKeys = [];
+    for (key in reqUser.body) {
+      if (key === null || key === undefined) {
+        invalidKeys.push(key);
+      }
+    }
+    if (invalidKeys.length > 0) {
+      throw PropertyError(invalidKeys);
+    }
+  }
 }
 
 async function registerUser(req, res) {
   const reqUser = req.body;
-  try {
-    await validateUser(reqUser);
-  } catch (error) {
-    throw new Error("Invalid user data: " + error.message);
-  }
   const { username, email, password, signUpDate } = reqUser;
   const emailExists = await User.findOne({ email: email }).exec();
   if (emailExists) {
@@ -49,12 +52,12 @@ async function registerUser(req, res) {
       .status(409)
       .json({ message: "This email is already in use, please try again" });
   }
-  const passwordHash = await bcrypt.hash(passwordHash, 10);
+  const passwordHash = await bcrypt.hash(password, 10);
   const validUser = new User({
-    username: reqUser.username,
+    username: username,
     passwordHash: passwordHash,
     email: reqUser.email,
-    signUpDate: reqUser.signUpDate,
+    signUpDate: signUpDate,
   });
   try {
     await validUser.save();
@@ -82,7 +85,7 @@ async function loginUser(req, res) {
   }
   const user = await User.findOne({ email: email });
 
-  if (user == null) {
+  if (!user) {
     return res.status(404).json({ errorMessage: "User does not exist!" });
   }
   const validPasswordAttempt = await bcrypt.compare(

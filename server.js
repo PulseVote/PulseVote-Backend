@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const app = require("./app");
-const tls = require("node:tls");
 const https = require("node:https");
 const fs = require("fs");
 const User = require("./schemas/user.js");
@@ -12,18 +11,13 @@ const options = {
   cert: fs.readFileSync("shravans-cert.pem"),
 };
 async function main() {
-  await mongoose
-    .connect(process.env.MONGODB, {
+  try {
+    await mongoose.connect(process.env.MONGODB, {
       serverSelectionTimeoutMS: 5000,
-    })
-    .then(
-      () => {
-        User.createCollection();
-      },
-      (err) => {
-        console.log(err);
-      }
-    );
+    });
+  } catch (err) {
+    console.log(err);
+  }
 }
 main().catch((error) => log(error));
 https.createServer(options, app).listen(PORT, () => {

@@ -1,6 +1,6 @@
-import { ValidationError } from "./ValidationError";
+const  ValidationError  = require("./ValidationError.js");
 
-export default class PropertyError extends ValidationError {
+class PropertyError extends ValidationError {
   constructor(properties) {
     let message = "Invalid property values from json request\n";
     for (property of properties) {
@@ -10,3 +10,4 @@ export default class PropertyError extends ValidationError {
     super(message);
   }
 }
+module.exports = PropertyError;

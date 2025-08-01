@@ -2,7 +2,7 @@
 // that being sensitive info
 const jwt = require("jsonwebtoken");
 const { PropertyError } = require("../exceptions/PropertyError.js");
-function protected(req, res, next) {
+let protection = function protected(req, res, next) {
   // first we need to validate if the req contains the jwt, if it does, then we verify it, else we bounce it back
   const token = req.headers.authorization;
   if (!token) {
@@ -15,4 +15,6 @@ function protected(req, res, next) {
   } catch (err) {
     return res.status(403).json({ message: "Unauthorized access" });
   }
-}
+};
+
+module.exports = protection;

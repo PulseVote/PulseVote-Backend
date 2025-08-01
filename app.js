@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const authRoutes = require("./routes/authRouter.js");
 const User = require("./schemas/user.js");
 const mongoose = require("mongoose");
+const protection = require("./middleware/protected.js");
 dotenv.config();
 
 const app = express();
@@ -24,7 +25,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("PulseVote API running");
 });
-app.get("/api/protected", protect, (req, res) => {
+app.get("/api/protected", protection, (req, res) => {
   res.json({
     message: `Welcome, user ${req.user.id}! You have accessed protected data.`,
     timestamp: new Date(),
