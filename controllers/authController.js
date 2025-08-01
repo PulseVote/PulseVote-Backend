@@ -58,7 +58,7 @@ async function registerUser(req, res) {
   });
   try {
     await validUser.save();
-    let token = tokenization({ id: email._id }, process.env.SECRET, {
+    let token = tokenization({ id: validUser._id }, process.env.SECRET, {
       expiresIn: process.env.TOKEN_LONG,
     });
     res
