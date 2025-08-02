@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const tokenization = require("../service/tokenGeneration.js");
 const nodeMailler = require("nodemailer");
-const PropertyError = require("../exceptions/PropertyError.js");
 const transporter = nodeMailler.createTransport({
   host: "gmail",
   secure: true,
@@ -26,37 +25,27 @@ async function sendMail(sender, receivers, subject, content) {
   });
   console.log("Message Sent");
 }
-async function validateUser(reqUser) {
-  try {
-    await User.validate(reqUser);
-  } catch (error) {
-    console.log(error);
-    let invalidKeys = [];
-    for (key in reqUser.body) {
-      if (key === null || key === undefined) {
-        invalidKeys.push(key);
-      }
-    }
-    if (invalidKeys.length > 0) {
-      throw PropertyError(invalidKeys);
-    }
-  }
-}
 
 async function registerUser(req, res) {
-  const reqUser = req.body;
-  const { username, email, password, signUpDate } = reqUser;
+  if (!req || !req.body) {
+    return res.status(400).json({ message: "Invalid  register request" });
+  }
+  const { username, email, password, signUpDate } = req.body;
+  if (!username || !email || !password || !signUpDate) {
+    return res.status(400).json({ message: "You sent missing data" });
+  }
   const emailExists = await User.findOne({ email: email }).exec();
   if (emailExists) {
     return res
       .status(409)
       .json({ message: "This email is already in use, please try again" });
   }
-  const passwordHash = await bcrypt.hash(password, 10);
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(password, salt);
   const validUser = new User({
     username: username,
     passwordHash: passwordHash,
-    email: reqUser.email,
+    email: email,
     signUpDate: signUpDate,
   });
   try {
@@ -68,6 +57,7 @@ async function registerUser(req, res) {
       .status(201)
       .json({ message: `Successfully registered ${validUser.username}!` });
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       message: "internal server error",
       errorMessage: err,

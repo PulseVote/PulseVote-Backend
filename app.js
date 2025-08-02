@@ -19,8 +19,9 @@ app.use(
     credentials: true,
   })
 );
-app.use("/api/auth", authRoutes);
 app.use(express.json());
+app.use("/api/auth", authRoutes);
+
 // create a custom validation handler for success, and fail, also have a critical
 app.get("/", (req, res) => {
   res.send("PulseVote API running");

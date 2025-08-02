@@ -1,12 +1,11 @@
+const jwt = require("jsonwebtoken");
 // the purpose of this is, this will be used to verify the jwt tokens each time the user trie ot access info
 // that being sensitive info
-const jwt = require("jsonwebtoken");
-const { PropertyError } = require("../exceptions/PropertyError.js");
 let protection = function protected(req, res, next) {
   // first we need to validate if the req contains the jwt, if it does, then we verify it, else we bounce it back
   const token = req.headers.authorization;
   if (!token) {
-    throw new PropertyError(["Bearer"]);
+    throw new Error("No proof of authorization");
   }
   try {
     const decoded = jwt.verify(token, process.env.SECRET);
