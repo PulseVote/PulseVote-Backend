@@ -9,7 +9,7 @@ const transporter = nodeMailler.createTransport({
   secure: true,
   auth: {
     user: "shravanramjathan@gmail.com",
-    pass: "myPassword",
+    pass: "kqkh foto nngm igaw",
   },
 });
 
@@ -19,9 +19,8 @@ async function sendMail(req, res) {
   }
   const { sender, receivers, subject, content } = req.body;
   if (!sender || !receivers || !subject || !content) {
-    if (!req) {
+   
       res.status(400).json({ message: "Invalid data send!" });
-    }
   }
   if (receivers.length == 0) {
     throw new Error("there are no receivers.");
