@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const tokenization = require("../service/tokenGeneration.js");
 const nodeMailler = require("nodemailer");
 const transporter = nodeMailler.createTransport({
-  host: "gmail",
+  host: "smtp.gmail.com",
   secure: true,
   auth: {
     user: "shravanramjathan@gmail.com",
@@ -13,7 +13,16 @@ const transporter = nodeMailler.createTransport({
   },
 });
 
-async function sendMail(sender, receivers, subject, content) {
+async function sendMail(req, res) {
+  if (!req) {
+    res.status(400).json({ message: "No data sent!" });
+  }
+  const { sender, receivers, subject, content } = req.body;
+  if (!sender || !receivers || !subject || !content) {
+    if (!req) {
+      res.status(400).json({ message: "Invalid data send!" });
+    }
+  }
   if (receivers.length == 0) {
     throw new Error("there are no receivers.");
   }
@@ -23,7 +32,7 @@ async function sendMail(sender, receivers, subject, content) {
     subject: subject,
     text: content,
   });
-  console.log("Message Sent");
+  res.status(201).json({ message: "Check your mail" });
 }
 
 async function registerUser(req, res) {
@@ -51,7 +60,7 @@ async function registerUser(req, res) {
   try {
     await validUser.save();
     let token = tokenization({ id: validUser._id }, process.env.SECRET, {
-      expiresIn: process.env.TOKEN_LONG,
+      expiresIn: 10 * 60, // short
     });
     res
       .status(201)
@@ -97,4 +106,5 @@ async function loginUser(req, res) {
 module.exports = {
   registerUser,
   loginUser,
+  sendMail,
 };
