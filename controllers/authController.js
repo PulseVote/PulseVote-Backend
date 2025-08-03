@@ -18,8 +18,7 @@ async function registerUser(req, res) {
       .status(409)
       .json({ message: "This email is already in use, please try again" });
   }
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash(password, salt);
+  const passwordHash = passwordHasher(password);
   const validUser = new User({
     username: username,
     passwordHash: passwordHash,
@@ -65,8 +64,11 @@ async function loginUser(req, res) {
       errorMessage: "Username or password is incorrect!",
     });
   }
-  let token = tokenization({ id: user._id }, process.env.SECRET, {
-    expiresIn: process.env.TOKEN_SHORT,
+  let refreshToken = tokenization({ id: user._id }, process.env.SECRET, {
+    expiresIn: "7d",
+  });
+  let accessToken = tokenization({ id: user._id }, process.env.SECRET, {
+    expiresIn: 30 * 60,
   });
 
   res.status(200).json({ token });
