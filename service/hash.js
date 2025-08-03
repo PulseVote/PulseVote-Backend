@@ -7,4 +7,4 @@ let passwordHasher = (password) => {
   return hashedPassword;
 };
 
-modules.export = passwordHasher;
+module.exports = passwordHasher;

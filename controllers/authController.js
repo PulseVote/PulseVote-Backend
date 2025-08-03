@@ -1,6 +1,4 @@
-const { isEmpty } = require("tls");
 const User = require("../schemas/user.js");
-const jwt = require("jsonwebtoken");
 const { passwordHasher } = require("../service/hash.js");
 const tokenization = require("../service/tokenGeneration.js");
 
