@@ -19,6 +19,6 @@ router.get("/", (req, res) => {
 // we now added a router to these functions, so when this endpoint is called, that controller logic will run
 router.post("/register", registerUser);
 
-router.post("/login", loginUser);
+router.get("/login", loginUser);
 
 module.exports = router;
