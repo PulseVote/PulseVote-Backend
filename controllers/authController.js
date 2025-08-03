@@ -3,36 +3,6 @@ const User = require("../schemas/user.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const tokenization = require("../service/tokenGeneration.js");
-const nodeMailler = require("nodemailer");
-const transporter = nodeMailler.createTransport({
-  host: "smtp.gmail.com",
-  secure: true,
-  auth: {
-    user: "shravanramjathan@gmail.com",
-    pass: "kqkh foto nngm igaw",
-  },
-});
-
-async function sendMail(req, res) {
-  if (!req) {
-    res.status(400).json({ message: "No data sent!" });
-  }
-  const { sender, receivers, subject, content } = req.body;
-  if (!sender || !receivers || !subject || !content) {
-   
-      res.status(400).json({ message: "Invalid data send!" });
-  }
-  if (receivers.length == 0) {
-    throw new Error("there are no receivers.");
-  }
-  const info = await transporter.sendMail({
-    from: sender,
-    to: receivers.join(", "), // we need to resolve this
-    subject: subject,
-    text: content,
-  });
-  res.status(201).json({ message: "Check your mail" });
-}
 
 async function registerUser(req, res) {
   if (!req || !req.body) {
@@ -105,5 +75,4 @@ async function loginUser(req, res) {
 module.exports = {
   registerUser,
   loginUser,
-  sendMail,
 };
