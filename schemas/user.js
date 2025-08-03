@@ -17,6 +17,12 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  refreshToken: {
+    type: String,
+  },
+  expirationaDate: {
+    type: Date,
+  },
 });
 const User = mongoose.model("User", userSchema);
 userSchema.pre("save", function (next) {
