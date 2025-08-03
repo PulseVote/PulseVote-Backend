@@ -1,7 +1,7 @@
 const { isEmpty } = require("tls");
 const User = require("../schemas/user.js");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const { passwordHasher } = require("../service/hash.js");
 const tokenization = require("../service/tokenGeneration.js");
 
 async function registerUser(req, res) {
