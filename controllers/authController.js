@@ -71,7 +71,7 @@ async function loginUser(req, res) {
     expiresIn: 30 * 60,
   });
 
-  res.status(200).json({ token });
+  res.status(200).json({ access: accessToken, refresh: refreshToken });
 }
 
 module.exports = {
