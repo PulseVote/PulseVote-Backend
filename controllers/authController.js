@@ -25,9 +25,11 @@ async function registerUser(req, res) {
   });
   try {
     await validUser.save();
-    let token = tokenization({ id: validUser._id }, process.env.SECRET, {
-      expiresIn: 10 * 60, // short
-    });
+    let token = tokenization(
+      { id: validUser._id },
+      process.env.SECRET,
+      10 * 60 // short
+    );
     res
       .status(201)
       .json({ message: `Successfully registered ${validUser.username}!` });
@@ -62,9 +64,7 @@ async function loginUser(req, res) {
   let refreshToken = tokenization({ id: user._id }, process.env.SECRET, {
     expiresIn: 3600 * 24 * 7,
   });
-  let accessToken = tokenization({ id: user._id }, process.env.SECRET, {
-    expiresIn: 30 * 60,
-  });
+  let accessToken = tokenization({ id: user._id }, process.env.SECRET, 30 * 60);
   const expirationDate = new Date();
   expirationDate.setDate(todday.getDate() + 7);
   user.refreshToken = refreshToken;
