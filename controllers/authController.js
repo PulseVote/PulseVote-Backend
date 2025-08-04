@@ -1,5 +1,5 @@
 const User = require("../schemas/user.js");
-
+const bcrypt = require("bcrypt");
 const tokenization = require("../service/tokenGeneration.js");
 
 async function registerUser(req, res) {
@@ -61,12 +61,14 @@ async function loginUser(req, res) {
       errorMessage: "Username or password is incorrect!",
     });
   }
-  let refreshToken = tokenization({ id: user._id }, process.env.SECRET, {
-    expiresIn: 3600 * 24 * 7,
-  });
+  let refreshToken = tokenization(
+    { id: user._id },
+    process.env.SECRET,
+    3600 * 24 * 7
+  );
   let accessToken = tokenization({ id: user._id }, process.env.SECRET, 30 * 60);
   const expirationDate = new Date();
-  expirationDate.setDate(todday.getDate() + 7);
+  expirationDate.setDate(expirationDate.getDate() + 7);
   user.refreshToken = refreshToken;
   user.expirationaDate = expirationDate;
 
