@@ -1,5 +1,5 @@
 const User = require("../schemas/user.js");
-const { passwordHasher } = require("../service/hash.js");
+
 const tokenization = require("../service/tokenGeneration.js");
 
 async function registerUser(req, res) {
@@ -16,10 +16,10 @@ async function registerUser(req, res) {
       .status(409)
       .json({ message: "This email is already in use, please try again" });
   }
-  const passwordHash = passwordHasher(password);
+
   const validUser = new User({
     username: username,
-    passwordHash: passwordHash,
+    password: password,
     email: email,
     signUpDate: signUpDate,
   });
@@ -53,23 +53,29 @@ async function loginUser(req, res) {
   if (!user) {
     return res.status(404).json({ errorMessage: "User does not exist!" });
   }
-  const validPasswordAttempt = await bcrypt.compare(
-    password,
-    user.passwordHash
-  );
+  const validPasswordAttempt = await bcrypt.compare(password, user.password);
   if (!validPasswordAttempt) {
     return res.status(401).json({
       errorMessage: "Username or password is incorrect!",
     });
   }
   let refreshToken = tokenization({ id: user._id }, process.env.SECRET, {
-    expiresIn: "7d",
+    expiresIn: 3600 * 24 * 7,
   });
   let accessToken = tokenization({ id: user._id }, process.env.SECRET, {
     expiresIn: 30 * 60,
   });
+  const expirationDate = new Date();
+  expirationDate.setDate(todday.getDate() + 7);
+  user.refreshToken = refreshToken;
+  user.expirationaDate = expirationDate;
 
-  res.status(200).json({ access: accessToken, refresh: refreshToken });
+  user.save();
+  res.status(200).json({
+    access: accessToken,
+    refresh: refreshToken,
+    expirationDate: expirationDate,
+  });
 }
 
 module.exports = {

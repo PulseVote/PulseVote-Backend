@@ -20,7 +20,7 @@ async function main() {
   }
 }
 main().catch((error) => log(error));
-https.createServer(options, app).listen(PORT , () => {
+https.createServer(options, app).listen(PORT, () => {
   console.log(`Server running on https${PORT}`);
 });
 

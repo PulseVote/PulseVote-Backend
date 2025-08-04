@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  passwordHash: {
+  password: {
     type: String,
     required: true,
   },
@@ -24,15 +24,16 @@ const userSchema = new mongoose.Schema({
     type: Date,
   },
 });
-const User = mongoose.model("User", userSchema);
-userSchema.pre("save", function (next) {
-  if (!this.isModified("passwordHash")) return next();
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
   const saltRounds = 10;
-  const salt = bcrypt.genSalt(saltRounds);
-  const passwordHash = bcrypt.hash(this.passwordHash, salt);
+  const salt = await bcrypt.genSalt(saltRounds);
+  this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 userSchema.methods.comparePassword = function (candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.passwordHash);
+  return bcrypt.compare(candidatePassword, this.password);
 };
+const User = mongoose.model("User", userSchema);
+
 module.exports = User;
