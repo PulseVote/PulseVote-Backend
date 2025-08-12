@@ -25,14 +25,10 @@ async function registerUser(req, res) {
   });
   try {
     await validUser.save();
-    let token = tokenization(
-      { id: validUser._id },
-      process.env.SECRET,
-      10 * 60 // short
-    );
-    res
-      .status(201)
-      .json({ message: `Successfully registered ${validUser.username}!` });
+
+    res.status(201).json({
+      message: `Successfully registered ${validUser.username}!`,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({
