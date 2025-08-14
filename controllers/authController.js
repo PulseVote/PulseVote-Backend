@@ -62,16 +62,13 @@ async function loginUser(req, res) {
     process.env.SECRET,
     3600 * 24 * 7
   );
+
   let accessToken = tokenization({ id: user._id }, process.env.SECRET, 30 * 60);
-
-
-
+  req.session.refresh = refreshToken;
 
   user.save();
   res.status(200).json({
-    access: accessToken,
-    refresh: refreshToken,
-    expirationDate: expirationDate,
+    access: accessToken
   });
 }
 
