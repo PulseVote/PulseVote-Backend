@@ -66,9 +66,8 @@ async function loginUser(req, res) {
   req.session.refresh = refreshToken;
 
   user.save();
-  res.status(200).json({
-    access: accessToken
-  });
+  res.setHeader("Authorization", "Bearer " + accessToken);
+  res.status(200).json();
 }
 
 module.exports = {
