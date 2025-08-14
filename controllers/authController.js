@@ -32,8 +32,7 @@ async function registerUser(req, res) {
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: "internal server error",
-      errorMessage: err,
+      message: "Internal server error",
     });
   }
 }
@@ -67,7 +66,7 @@ async function loginUser(req, res) {
   expirationDate.setDate(expirationDate.getDate() + 7);
   user.refreshToken = refreshToken;
   user.expirationaDate = expirationDate;
-
+  res;
   user.save();
   res.status(200).json({
     access: accessToken,
