@@ -63,10 +63,9 @@ async function loginUser(req, res) {
     3600 * 24 * 7
   );
   let accessToken = tokenization({ id: user._id }, process.env.SECRET, 30 * 60);
-  const expirationDate = new Date();
-  expirationDate.setDate(expirationDate.getDate() + 7);
-  user.refreshToken = refreshToken;
-  user.expirationaDate = expirationDate;
+
+
+
 
   user.save();
   res.status(200).json({

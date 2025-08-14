@@ -17,12 +17,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  refreshToken: {
-    type: String,
-  },
-  expirationaDate: {
-    type: Date,
-  },
+ 
 });
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
