@@ -2,7 +2,9 @@ const User = require("../schemas/user.js");
 const bcrypt = require("bcrypt");
 const tokenization = require("../service/tokenGeneration.js");
 const { v4: uuidv4 } = require("uuid");
+const jwt = require("jsonwebtoken");
 const Token = require("../schemas/token.js");
+const { sha256 } = require("js-sha256/index.js");
 async function registerUser(req, res) {
   if (!req || !req.body) {
     return res.status(400).json({ message: "Invalid  register request" });
@@ -85,7 +87,27 @@ async function loginUser(req, res) {
   res.status(200).json();
 }
 
+async function refreshToken(req, res) {
+  const { refresh } = req.session;
+  const hashedRefreshToken = sha256(refresh);
+  const matchingTokens = Token.findOne({ token: hashedRefreshToken });
+  if (!matchingTokens) {
+    return res.status(401).json({ message: "You are not authorized" });
+    // this means that the user will have to re login
+  }
+  const decoded = jwt.verify(refresh, process.env.SECRET);
+  const { id } = decoded;
+  const foundUser = User.findOne({ _id: id });
+  if (!foundUser) {
+    return res.status(401).json({ message: "You are not authorized" });
+    // send some email to that user
+  }
+  let newAccessToken = tokenization({ id: id }, process.env.SECRET, 30 * 60);
+  res.setHeader("Authorization", `Bearer ${newAccessToken}`);
+  return res.status(200);
+}
 module.exports = {
   registerUser,
   loginUser,
+  refreshToken,
 };

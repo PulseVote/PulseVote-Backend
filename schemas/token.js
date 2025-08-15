@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const { sha256 } = require("js-sha256");
 const tokenSchema = new mongoose.Schema({
   user: {
     type: String,
@@ -28,13 +28,9 @@ const tokenSchema = new mongoose.Schema({
 });
 tokenSchema.pre("save", async function (next) {
   if (!this.isModified("token")) return next();
-  const saltRounds = 10;
-  const salt = await bcrypt.genSalt(saltRounds);
-  this.token = await bcrypt.hash(this.token, salt);
+  this.token = sha256(this.token);
   next();
 });
-tokenSchema.methods.compareToken = function (candidateToken) {
-  return bcrypt.compare(candidateToken, this.token);
-};
+
 const Token = mongoose.model("Token", tokenSchema);
 module.exports = Token;

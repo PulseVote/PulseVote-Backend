@@ -1,16 +1,17 @@
 // this is my favourite one
 
+const { sha256 } = require("js-sha256");
 const Token = require("../schemas/token");
-let refresh = async (req, res, next) => {
-  const { deviceId, token } = req.session;
+let refreshMiddle = async (req, res, next) => {
+  const { deviceId, refresh } = req.session;
 
-  if (!deviceId || !token) {
+  if (!deviceId || !refresh) {
     return res.status(401).json({ message: "Unautorized accesss" });
   }
-
-  const tokenFound = await Token.findOne({ token: token });
-  const tokenFoundWithDevice = Token.findOne({
-    token: token,
+  const hashedRefreshToken = sha256(refresh);
+  const tokenFound = await Token.findOne({ token: hashedRefreshToken });
+  const tokenFoundWithDevice = await Token.findOne({
+    token: hashedRefreshToken,
     deviceId: deviceId,
   });
   if (!tokenFoundWithDevice && tokenFound) {
@@ -19,3 +20,4 @@ let refresh = async (req, res, next) => {
   }
   next();
 };
+module.exports = refreshMiddle;
