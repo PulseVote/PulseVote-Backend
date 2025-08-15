@@ -18,7 +18,8 @@ app.use(
     maxAge: 3600 * 24 * 7 * 1000,
     secure: true,
     httpOnly: true,
-    keys: ["key"],
+    secret: "s3Cur3",
+    name: "sessionId",
   })
 );
 app.use(

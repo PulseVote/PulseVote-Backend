@@ -1,7 +1,8 @@
 const User = require("../schemas/user.js");
 const bcrypt = require("bcrypt");
 const tokenization = require("../service/tokenGeneration.js");
-
+const { v4: uuidv4 } = require("uuid");
+const Token = require("../schemas/token.js");
 async function registerUser(req, res) {
   if (!req || !req.body) {
     return res.status(400).json({ message: "Invalid  register request" });
@@ -41,7 +42,7 @@ async function loginUser(req, res) {
   const { email, password } = req.body;
   const isValidDetails = email.length > 3 && password.length > 6 ? true : false;
   if (!isValidDetails) {
-    res.status(400).json({
+    return res.status(400).json({
       errorMessage: "You have sent invalid email or password details.",
     });
   }
@@ -59,13 +60,27 @@ async function loginUser(req, res) {
   let refreshToken = tokenization(
     { id: user._id },
     process.env.SECRET,
-    3600 * 24 * 7
+    3600 * 24 * 7 * 1000
   );
 
   let accessToken = tokenization({ id: user._id }, process.env.SECRET, 30 * 60);
-  req.session.refresh = refreshToken;
 
-  user.save();
+  const deviceId = uuidv4();
+  req.session.deviceId = deviceId;
+  req.session.refresh = refreshToken;
+  const now = new Date();
+  const oneWeekLater = new Date(now.getTime() + 3600 * 24 * 7 * 1000);
+
+  const newMetaToken = new Token({
+    user: user._id,
+    deviceId: deviceId,
+    token: refreshToken,
+    isLocked: false,
+    isSuspicious: false,
+    expiresAt: oneWeekLater,
+  });
+  await user.save();
+  await newMetaToken.save();
   res.setHeader("Authorization", "Bearer " + accessToken);
   res.status(200).json();
 }
