@@ -4,7 +4,7 @@ const tokenization = require("../service/tokenGeneration.js");
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const Token = require("../schemas/token.js");
-const { sha256 } = require("js-sha256/index.js");
+const { sha256 } = require("js-sha256");
 async function registerUser(req, res) {
   if (!req || !req.body) {
     return res.status(400).json({ message: "Invalid  register request" });
