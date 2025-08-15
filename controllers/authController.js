@@ -86,7 +86,24 @@ async function loginUser(req, res) {
   res.setHeader("Authorization", "Bearer " + accessToken);
   res.status(200).json();
 }
-
+async function logoutUser(req, res) {
+  const access = req.get("Authorization");
+  if (!access) {
+    return res.status(401).json({ message: "Unauthorized user" });
+    // log this and email the user
+  }
+  const decoded = jwt.verify(access, process.env.SECRET);
+  const { id } = decoded;
+  const foundRefreshToken = Token.findOne({ user: id });
+  if (!foundRefreshToken) {
+    return res.status(401).json({ message: "You are not authorized" });
+    // send some email to that user
+  }
+  // chop down this look up logic and abstract it
+  foundRefreshToken.token = null;
+  foundRefreshToken.save();
+  return res.status(200).json({ message: "You have been logged out" });
+}
 async function refreshToken(req, res) {
   const { refresh } = req.session;
   const hashedRefreshToken = sha256(refresh);
