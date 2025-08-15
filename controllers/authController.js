@@ -87,13 +87,7 @@ async function loginUser(req, res) {
   res.status(200).json();
 }
 async function logoutUser(req, res) {
-  const access = req.get("Authorization");
-  if (!access) {
-    return res.status(401).json({ message: "Unauthorized user" });
-    // log this and email the user
-  }
-  const decoded = jwt.verify(access, process.env.SECRET);
-  const { id } = decoded;
+  const { id } = req.user;
   const foundRefreshToken = Token.findOne({ user: id });
   if (!foundRefreshToken) {
     return res.status(401).json({ message: "You are not authorized" });
@@ -127,4 +121,5 @@ module.exports = {
   registerUser,
   loginUser,
   refreshToken,
+  logoutUser,
 };

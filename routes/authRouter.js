@@ -5,8 +5,10 @@ const {
   loginUser,
   sendMail,
   refreshToken,
+  logoutUser,
 } = require("../controllers/authController.js");
 const refreshMiddle = require("../middleware/refresh.js");
+const protection = require("../middleware/protected.js");
 const timeLog = (req, res, next) => {
   console.log(`Time: ${Date.now()}`);
   next();
@@ -23,4 +25,5 @@ router.post("/register", registerUser);
 
 router.post("/login", loginUser);
 router.post("/refresh", refreshMiddle, refreshToken);
+router.post("/logout", protection, logoutUser);
 module.exports = router;
